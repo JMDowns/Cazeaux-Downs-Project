@@ -8,7 +8,7 @@ import time
 # -r : randomize the starting board
 # -p : print out the board on the console at each iteration
 # -i <int value> : runs the board over <value> iterations
-# -s : if -i is passed, stops the board if there are repeats
+# -s : stops the board if there are repeats
 
 #Boards are generated ahead of time to avoid allocating more memory
 #boardmod0 set to random with -r
