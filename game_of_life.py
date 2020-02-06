@@ -10,6 +10,9 @@ import time
 # -i <int value> : runs the board over <value> iterations
 # -s : stops the board if there are repeats
 
+#Set up with -b <int>
+board_size = 8
+
 #Boards are generated ahead of time to avoid allocating more memory
 #boardmod0 set to random with -r
 boardmod0 = np.full((8,8), False)
@@ -23,6 +26,8 @@ will_print_board = False
 
 #Set to True with -s
 stop_after_repeat = False
+
+padding = 1
 
 def print_board(counter):
     """ 
@@ -70,14 +75,6 @@ def check_neighbors(board, row, column):
     check_right = column+1
     check_up = row - 1
     check_down = row + 1
-    if (row == 7):
-        check_down = 0
-    if (row == 0):
-        check_up = 7
-    if (column == 7):
-        check_right = 0
-    if (column == 0):
-        check_left = 7
     
     num_neighbors = 0
 
@@ -118,8 +115,20 @@ def update_board(counter):
     
     board = boardmod0 if counter % 2 == 0 else boardmod1
     board_to_update = boardmod1 if counter % 2 == 0 else boardmod0
-    for row in range(8):
-        for column in range(8):
+    #board_to_update = np.pad(board_to_update.reshape(10,10), (1,1), mode='wrap')
+    for c in range(padding, board_size+padding):
+        board_to_update[0][c] = board[board_size+padding][c]
+        board_to_update[board_size+padding][c] = board[0][c]
+    for r in range(padding, board_size+padding):
+        board_to_update[r][0] = board[r][board_size+padding]
+        board_to_update[r][board_size+padding] = board[r][0]
+    board_to_update[0][0]=board[board_size+padding][board_size+padding]
+    board_to_update[0][board_size+2*padding-1]=board[board_size+padding][padding]
+    board_to_update[board_size+2*padding-1][0]=board[padding][board_size+padding]
+    board_to_update[board_size+2*padding-1][board_size+2*padding-1]=board[padding][padding]
+        
+    for row in range(padding, board_size+padding):
+        for column in range(padding, board_size+padding):
             cell_state = board[row][column]
             num_neighbors = check_neighbors(board, row, column)
             if ((cell_state and not (num_neighbors == 2 or num_neighbors == 3))
@@ -136,16 +145,29 @@ def is_int(arg):
     except:
         return False
 
+setboardmod0 = False
+    
 #argument parsing
 if (len(argv) > 1):
     for arg in argv[1:]:
         if (arg == "-r"):
-            boardmod0 = np.random.choice(a=[False, True], size=(8,8), p=[.5,.5])
+            setboardmod0=True
         if (arg == "-i"):
             try:
                 next_arg = argv[argv.index(arg)+1]
                 if (is_int(next_arg)):
                     total_iterations = int(next_arg)
+                else:
+                    stdout.write("Incorrect usage of argument -i. Please add an integer afterwards.\n")
+                    quit()
+            except:
+                stdout.write("Incorrect usage of argument -i. Please add an integer afterwards.\n")
+                quit()
+        if (arg == "-b"):
+            try:
+                next_arg = argv[argv.index(arg)+1]
+                if (is_int(next_arg)):
+                    board_size = int(next_arg)
                 else:
                     stdout.write("Incorrect usage of argument -i. Please add an integer afterwards.\n")
                     quit()
@@ -161,6 +183,11 @@ counter = 0
 
 #Play over a total_iterations number of iterations
 #If -s is passed, stop if boards repeat
+if setboardmod0:
+    boardmod0 = np.random.choice(a=[False, True], size=(board_size+2*padding,board_size+2*padding), p=[.5,.5])
+
+boardmod1 = np.full((board_size+2*padding, board_size+2*padding), False)
+
 for i in range(total_iterations):
     if (stop_after_repeat):
         if np.array_equal(boardmod0,boardmod1):

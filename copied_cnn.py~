@@ -1,0 +1,38 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+def life_step(X):
+    """
+    'Game of Life' logic, from: 
+    https://jakevdp.github.io/blog/2013/08/07/conways-game-of-life/
+    """
+    live_neighbors = sum(np.roll(np.roll(X, i, 0), j, 1)
+                     for i in (-1, 0, 1) for j in (-1, 0, 1)
+                     if (i != 0 or j != 0))
+    return (live_neighbors == 3) | (X & (live_neighbors == 2)).astype(int)
+
+def generate_frames(num_frames, board_shape=(100,100), prob_alive=0.15):
+    """
+    Generates `num_frames` random game boards with a particular shape and a predefined 
+    probability of each cell being 'alive'.
+    """
+    
+    return np.array([
+        np.random.choice([False, True], size=board_shape, p=[1-prob_alive, prob_alive])
+        for _ in range(num_frames)
+    ]).astype(int)
+
+def render_frames(frame1, frame2):
+    plt.subplot(1, 2, 1)
+    plt.imshow(frame1.flatten().reshape(board_shape), cmap='gray')
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(frame2.flatten().reshape(board_shape), cmap='gray')
+
+board_shape = (20, 20)
+board_size = board_shape[0] * board_shape[1]
+probability_alive = 0.15
+
+frames = generate_frames(10, board_shape=board_shape, prob_alive=probability_alive)
+frames.shape # (num_frames, board_w, board_h)
+print(frames[0])

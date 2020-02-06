@@ -1,0 +1,11 @@
+import numpy as np
+
+def life_step(X):
+    """
+    'Game of Life' logic, from: 
+    https://jakevdp.github.io/blog/2013/08/07/conways-game-of-life/
+    """
+    live_neighbors = sum(np.roll(np.roll(X, i, 0), j, 1)
+                     for i in (-1, 0, 1) for j in (-1, 0, 1)
+                     if (i != 0 or j != 0))
+    return (live_neighbors == 3) | (X & (live_neighbors == 2)).astype(int)
